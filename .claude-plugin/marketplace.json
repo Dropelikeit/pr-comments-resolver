@@ -1,16 +1,16 @@
 {
   "name": "pr-comments-resolver",
   "owner": {
-    "name": "Marcel Strahl"
+    "name": "Marcel Strahl @ Dropelikeit"
   },
   "plugins": [
     {
       "name": "pr-comments-resolver",
       "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
-      "version": "1.0.0",
+      "version": "0.1.1",
       "source": "./",
       "author": {
-        "name": "Marcel Strahl"
+        "name": "Marcel Strahl @ Dropelikeit"
       },
       "homepage": "https://github.com/Dropelikeit/pr-comments-resolver",
       "repository": "https://github.com/Dropelikeit/pr-comments-resolver",
