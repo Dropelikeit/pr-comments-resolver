@@ -256,3 +256,13 @@ Check for:
 Check any project-specific conventions and patterns defined in the project's CLAUDE.md. The checks above are universal — defer to whatever the project documents for language- or framework-specific rules.
 
 If you find issues during self-review, fix them immediately and re-run verification from Step 5.
+
+## Step 7: Summary
+
+Show the user a summary of the work done:
+
+- **Comments addressed**: List each comment with file path, line number, and what was changed
+- **Files modified**: List each file with a brief description of changes
+- **Verification results**: Which commands ran and their pass/fail status
+- **Self-review results**: Any issues found and fixed during self-review
+- **Unresolved comments**: If any comments could not be addressed, state the reason (e.g., unclear intent, requires architectural change, blocked by external dependency)
