@@ -181,3 +181,78 @@ Show unresolved comments as a numbered list:
 The `(outdated)` marker means the code has changed since the comment was written — check relevance before acting.
 
 If there are no unresolved comments, inform the user and stop.
+
+## Step 4: Create Tasks & Resolve Comments
+
+Create a TodoWrite task for each unresolved comment. Then work through each task sequentially:
+
+1. **Read the affected file** at the referenced location
+2. **Understand the comment** in the context of the surrounding code
+3. If the comment is marked `(outdated)`, check whether the feedback is still relevant before acting
+4. **If unclear**: Ask the user via AskUserQuestion what exactly is expected
+5. **Implement the change** according to the reviewer's feedback
+6. **Mark the task as completed**
+
+Important:
+- Work through comments sequentially, not in parallel — changes may overlap in the same file
+- Follow conventions from CLAUDE.md if present in the project
+- Respect existing code patterns and architecture in the project
+
+## Step 5: Verification
+
+After all comments have been addressed, run project-defined verification commands.
+
+### 5.1 Find Verification Commands
+
+Check the project's CLAUDE.md for defined verification commands (linting, static analysis, tests). Look for sections like "Commands", "Scripts", "Testing", or similar.
+
+Examples of what you might find:
+- PHP: `task cs-fixer`, `task psalm`, `task test`
+- JavaScript/TypeScript: `npm run lint`, `npm test`
+- Python: `ruff check .`, `pytest`
+- Go: `go vet ./...`, `go test ./...`
+
+### 5.2 Run Verification
+
+If verification commands are found in CLAUDE.md, run them in order.
+
+If no verification commands are found, ask the user via AskUserQuestion:
+> "What verification commands should I run for this project? (e.g., lint, tests, type checks)"
+
+Provide an option to skip verification.
+
+### 5.3 Fix Issues
+
+If any verification step fails:
+1. Analyze the error output
+2. Fix the issue
+3. Re-run the failing verification command
+4. Repeat until all checks pass
+
+## Step 6: Self-Review
+
+Review all changes made:
+
+```bash
+git diff
+```
+
+Check for:
+
+### Reusability
+- Is existing code reused instead of duplicated?
+- Are new abstractions justified or unnecessary?
+
+### Code Quality
+- Is the code clear and understandable?
+- Does it follow existing patterns in the project?
+
+### Security
+- No SQL injection, XSS, command injection, or other OWASP Top 10 vulnerabilities?
+- Are inputs validated at system boundaries?
+- No secrets or sensitive data in the code?
+
+### Project-Specific Conventions
+Check any project-specific conventions and patterns defined in the project's CLAUDE.md. The checks above are universal — defer to whatever the project documents for language- or framework-specific rules.
+
+If you find issues during self-review, fix them immediately and re-run verification from Step 5.
