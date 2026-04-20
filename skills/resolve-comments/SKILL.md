@@ -84,3 +84,100 @@ gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'
 ```bash
 glab repo view --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['full_name'])"
 ```
+
+## Step 2: Determine PR/MR Number
+
+If `$ARGUMENTS` is provided, use it as the PR/MR number.
+
+If `$ARGUMENTS` is empty or not provided, detect automatically from the current branch:
+
+- **GitHub**:
+```bash
+gh pr view --json number,title --jq '"\(.number) \(.title)"'
+```
+
+- **GitLab**:
+```bash
+glab mr view --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['iid'], d['title'])"
+```
+
+If no PR/MR exists for the current branch, ask the user for the PR/MR number via AskUserQuestion.
+
+## Step 3: Fetch & Display Unresolved Comments
+
+### GitHub
+
+Load all review threads via the GraphQL API. The `isResolved` status is only available through GraphQL.
+
+```bash
+gh api graphql -f query='
+query($owner: String!, $repo: String!, $pr: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      title
+      url
+      reviewThreads(first: 100) {
+        nodes {
+          isResolved
+          isOutdated
+          path
+          line
+          startLine
+          comments(first: 50) {
+            nodes {
+              author { login }
+              body
+              createdAt
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER
+```
+
+Replace `OWNER`, `REPO`, and `PR_NUMBER` with values from Steps 1 and 2.
+
+Filter: keep only threads where `isResolved` is `false`.
+
+### GitLab
+
+Fetch all discussions for the merge request:
+
+```bash
+glab api "projects/:id/merge_requests/MR_IID/discussions"
+```
+
+Replace `MR_IID` with the merge request IID from Step 2. The `:id` is automatically resolved by `glab` to the current project.
+
+Filter discussions:
+- Keep discussions where at least one note has `resolvable: true` AND `resolved: false`
+- Skip discussions where all resolvable notes are `resolved: true`
+
+Map GitLab fields to the display format:
+- `position.new_path` → file path
+- `position.new_line` → line number
+- `note.author.username` → author
+- `note.body` → comment body
+
+**Outdated detection**: GitLab does not have an `isOutdated` field like GitHub. If a note's `position` is `null` (the diff context was lost), mark the comment as `(outdated)`. This is a best-effort heuristic.
+
+### Display Unresolved Comments
+
+Show unresolved comments as a numbered list:
+
+```
+## Unresolved PR Comments (X of Y total)
+
+1. **path/to/file.ts:42** - @author
+   > Comment text here...
+
+2. **path/to/file.ts:108** - @author (outdated)
+   > Another comment...
+```
+
+The `(outdated)` marker means the code has changed since the comment was written — check relevance before acting.
+
+If there are no unresolved comments, inform the user and stop.
