@@ -1,0 +1,7 @@
+{
+  "name": "pr-comments-resolver",
+  "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
+  "author": {
+    "name": "Marcel Strahl"
+  }
+}
