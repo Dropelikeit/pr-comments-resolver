@@ -7,21 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2] - 2026-04-26
+## [0.1.4] - 2026-04-26
+
+### Fixed
+- Corrected version numbers in CHANGELOG.md to match actual git tags (v0.1.0–v0.1.3)
+
+## [0.1.3] - 2026-04-26
 
 ### Added
 - `icon.png` (256×256) for marketplace display
 - `category`, `tags`, `license`, `author.url` fields in `marketplace.json`
 - `version`, `icon`, `homepage`, `repository`, `license`, `keywords`, `author.url` fields in `plugin.json`
 - Marketplace installation instructions in README (`/plugin marketplace add`)
+- `CONTRIBUTING.md` with development setup, conventions, and release process
+- `CHANGELOG.md` (initial, later corrected in 0.1.4)
 
 ### Changed
-- `repository` in `marketplace.json` changed from plain string to structured object in `plugin.json`
+- `repository` field in `plugin.json` changed from plain string to structured object
 
-## [0.1.1] - 2026-04-21
+## [0.1.2] - 2026-04-21
 
 ### Added
 - `PRIVACY.md` documenting plugin data handling and privacy details
+
+## [0.1.1] - 2026-04-20
 
 ### Fixed
 - Corrected author name and version in plugin manifests
@@ -42,7 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CLAUDE.md` development guide and conventions
 - `README.md` with installation, usage, and platform support
 
-[Unreleased]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Dropelikeit/pr-comments-resolver/releases/tag/v0.1.0
