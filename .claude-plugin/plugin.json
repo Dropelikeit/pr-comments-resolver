@@ -1,7 +1,18 @@
 {
   "name": "pr-comments-resolver",
+  "version": "0.1.1",
   "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
   "author": {
-    "name": "Marcel Strahl @ Dropelikeit"
-  }
+    "name": "Marcel Strahl @ Dropelikeit",
+    "email": "support@marcel-strahl.de",
+    "url": "https://github.com/Dropelikeit"
+  },
+  "homepage": "https://github.com/Dropelikeit/pr-comments-resolver",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dropelikeit/pr-comments-resolver.git"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "keywords": ["pr", "code-review", "github", "gitlab", "merge-request", "review"]
 }

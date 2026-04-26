@@ -13,14 +13,18 @@ A Claude Code skill plugin that resolves unresolved PR/MR review comments across
 
 ## Installation
 
-```bash
-claude plugin install pr-comments-resolver
+### 1. Marketplace hinzufügen
+
+Füge zunächst meinen Marketplace zu Claude Code hinzu:
+
+```
+/plugin marketplace add Dropelikeit/pr-comments-resolver
 ```
 
-Or install from the repository:
+### 2. Plugin installieren
 
-```bash
-claude plugin install Dropelikeit/pr-comments-resolver
+```
+/plugin install pr-comments-resolver@pr-comments-resolver
 ```
 
 ## Prerequisites
