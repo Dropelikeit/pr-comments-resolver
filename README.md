@@ -13,17 +13,17 @@ A Claude Code skill plugin that resolves unresolved PR/MR review comments across
 
 ## Installation
 
-### 1. Marketplace hinzufügen
+### 1. Add a marketplace
 
-Füge zunächst meinen Marketplace zu Claude Code hinzu:
+First, add my Marketplace to Claude Code:
 
-```
+```txt
 /plugin marketplace add Dropelikeit/pr-comments-resolver
 ```
 
-### 2. Plugin installieren
+### 2. Install plugin
 
-```
+```txt
 /plugin install pr-comments-resolver@pr-comments-resolver
 ```
 
@@ -31,22 +31,22 @@ Füge zunächst meinen Marketplace zu Claude Code hinzu:
 
 Depending on your hosting platform, you need one of these CLI tools installed and authenticated:
 
-| Platform | CLI Tool | Install | Auth |
-|---|---|---|---|
-| GitHub | `gh` | [cli.github.com](https://cli.github.com/) | `gh auth login` |
-| GitLab | `glab` | [gitlab.com/gitlab-org/cli](https://gitlab.com/gitlab-org/cli) | `glab auth login` |
+| Platform | CLI Tool | Install                                                        | Auth              |
+|----------|----------|----------------------------------------------------------------|-------------------|
+| GitHub   | `gh`     | [cli.github.com](https://cli.github.com/)                      | `gh auth login`   |
+| GitLab   | `glab`   | [gitlab.com/gitlab-org/cli](https://gitlab.com/gitlab-org/cli) | `glab auth login` |
 
 ## Usage
 
 Trigger the skill with the slash command:
 
-```
+```txt
 /resolve-comments
 ```
 
 Or provide a specific PR/MR number:
 
-```
+```txt
 /resolve-comments 42
 ```
 
@@ -72,10 +72,10 @@ If no commands are found, the skill will ask you what to run (or skip verificati
 
 ## Supported Platforms
 
-| Platform | Status |
-|---|---|
-| GitHub | Supported |
-| GitLab | Supported |
+| Platform     | Status       |
+|--------------|--------------|
+| GitHub       | Supported    |
+| GitLab       | Supported    |
 | Azure DevOps | Planned (v2) |
 
 ## License
