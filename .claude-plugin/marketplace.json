@@ -9,7 +9,7 @@
       "name": "pr-comments-resolver",
       "source": "./",
       "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "category": "code-review",
       "tags": ["pr", "code-review", "github", "gitlab", "merge-request", "review"],
       "author": {

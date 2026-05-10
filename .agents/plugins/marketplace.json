@@ -1,0 +1,11 @@
+{
+  "name": "pr-comments-resolver",
+  "plugins": [
+    {
+      "name": "pr-comments-resolver",
+      "source": ".",
+      "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
+      "version": "0.2.0"
+    }
+  ]
+}

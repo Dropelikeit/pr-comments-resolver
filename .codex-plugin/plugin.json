@@ -1,0 +1,6 @@
+{
+  "name": "pr-comments-resolver",
+  "version": "0.2.0",
+  "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
+  "skills": "./dist/codex/skills/"
+}

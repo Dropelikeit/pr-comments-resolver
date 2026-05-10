@@ -1,12 +1,13 @@
 ---
 name: resolve-comments
 description: Use when resolving unresolved PR or MR review comments, working through reviewer feedback, or addressing code review threads on GitHub or GitLab repositories
-trigger: /resolve-comments
 ---
 
 # Resolve PR/MR Review Comments
 
 Work through all unresolved review comments from a pull request (GitHub) or merge request (GitLab).
+
+> Invoke this skill via `$resolve-comments` or the `/skills` command. This skill is stateless: platform detection runs on every invocation.
 
 ## Step 1: Platform Detection & CLI Verification
 
@@ -37,7 +38,7 @@ Match the URL against known patterns:
 | `gitlab.com` | GitLab | `glab` |
 | `dev.azure.com` or `visualstudio.com` | Azure DevOps | Not supported in v1 |
 
-If the URL does not match any known pattern (e.g., a self-hosted instance), ask the user which platform this repository is hosted on. Offer the options: GitHub, GitLab, Other. Use AskUserQuestion to present the options.
+If the URL does not match any known pattern (e.g., a self-hosted instance), ask the user which platform this repository is hosted on. Offer the options: GitHub, GitLab, Other. Ask the user directly in chat with the listed options.
 
 If the platform is Azure DevOps or Other, inform the user:
 > "This skill currently supports GitHub and GitLab. Azure DevOps support is planned for a future version."
@@ -59,19 +60,7 @@ If installed but not authenticated, tell the user the exact auth command to run.
 
 ### 1.4 Persist Platform (if supported)
 
-After successful detection and CLI verification, save a project memory:
-
-```markdown
----
-name: pr-comments-resolver-platform
-description: Detected hosting platform and CLI tool for this repository
-type: project
----
-
-Platform: <github|gitlab>
-CLI tool: <gh|glab>
-Repository: <owner/repo or namespace/project>
-```
+Codex has no persistent memory layer for skills. Skip persistence — platform detection re-runs on every invocation.
 
 ### 1.5 Get Repository Identifier
 
@@ -101,7 +90,7 @@ gh pr view --json number,title --jq '"\(.number) \(.title)"'
 glab mr view --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['iid'], d['title'])"
 ```
 
-If no PR/MR exists for the current branch, ask the user for the PR/MR number. Use AskUserQuestion to present the options.
+If no PR/MR exists for the current branch, ask the user for the PR/MR number. Ask the user directly in chat with the listed options.
 
 ## Step 3: Fetch & Display Unresolved Comments
 
@@ -184,20 +173,20 @@ If there are no unresolved comments, inform the user and stop.
 
 ## Step 4: Create Tasks & Resolve Comments
 
-Create a TodoWrite task for each unresolved comment.
+Maintain an internal step list as you work through each comment sequentially.
 
 Then work through each task sequentially:
 
 1. **Read the affected file** at the referenced location
 2. **Understand the comment** in the context of the surrounding code
 3. If the comment is marked `(outdated)`, check whether the feedback is still relevant before acting
-4. **If unclear**: Ask the user what exactly is expected. Use AskUserQuestion to present the options.
+4. **If unclear**: Ask the user what exactly is expected. Ask the user directly in chat with the listed options.
 5. **Implement the change** according to the reviewer's feedback
 6. **Mark the task as completed**
 
 Important:
 - Work through comments sequentially, not in parallel — changes may overlap in the same file
-- Follow conventions from CLAUDE.md (or AGENTS.md as fallback) if present in the project
+- Follow conventions from AGENTS.md if present in the project
 - Respect existing code patterns and architecture in the project
 
 ## Step 5: Verification
@@ -206,7 +195,7 @@ After all comments have been addressed, run project-defined verification command
 
 ### 5.1 Find Verification Commands
 
-Check the project's CLAUDE.md (or AGENTS.md as fallback) for defined verification commands (linting, static analysis, tests). Look for sections like "Commands", "Scripts", "Testing", or similar.
+Check the project's AGENTS.md for defined verification commands (linting, static analysis, tests). Look for sections like "Commands", "Scripts", "Testing", or similar.
 
 Examples of what you might find:
 - PHP: `task cs-fixer`, `task psalm`, `task test`
@@ -216,9 +205,9 @@ Examples of what you might find:
 
 ### 5.2 Run Verification
 
-If verification commands are found in CLAUDE.md (or AGENTS.md as fallback), run them in order.
+If verification commands are found in AGENTS.md, run them in order.
 
-If no verification commands are found, ask the user (offer a "skip verification" option as well): Use AskUserQuestion to present the options.
+If no verification commands are found, ask the user (offer a "skip verification" option as well): Ask the user directly in chat with the listed options.
 > "What verification commands should I run for this project? (e.g., lint, tests, type checks)"
 
 ### 5.3 Fix Issues
@@ -253,7 +242,7 @@ Check for:
 - No secrets or sensitive data in the code?
 
 ### Project-Specific Conventions
-Check any project-specific conventions and patterns defined in the project's CLAUDE.md (or AGENTS.md as fallback). The checks above are universal — defer to whatever the project documents for language- or framework-specific rules.
+Check any project-specific conventions and patterns defined in the project's AGENTS.md. The checks above are universal — defer to whatever the project documents for language- or framework-specific rules.
 
 If you find issues during self-review, fix them immediately and re-run verification from Step 5.
 
