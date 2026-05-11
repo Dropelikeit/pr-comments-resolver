@@ -1,0 +1,79 @@
+name: Build Dist On PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  build-agent:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [claude, codex, augment, junie, roo]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build ${{ matrix.agent }}
+        run: bash scripts/build.sh ${{ matrix.agent }}
+
+      - name: Upload ${{ matrix.agent }} outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.agent }}
+          path: |
+            dist/${{ matrix.agent }}/
+            skills/resolve-comments/SKILL.md
+
+  commit-dist:
+    if: github.event.pull_request.merged == true
+    needs: build-agent
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .artifacts
+
+      - name: Merge artifacts into workspace
+        run: |
+          cp -R .artifacts/build-claude/skills/. skills/
+          cp -R .artifacts/build-codex/dist/. dist/
+          cp -R .artifacts/build-augment/dist/. dist/
+          cp -R .artifacts/build-junie/dist/. dist/
+          cp -R .artifacts/build-roo/dist/. dist/
+
+      - name: Validate generated files
+        run: python3 scripts/validate.py
+
+      - name: Commit updated dist outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/ skills/
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: rebuild generated skill artifacts"
+          git push origin main

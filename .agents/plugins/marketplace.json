@@ -1,11 +1,20 @@
 {
   "name": "pr-comments-resolver",
+  "interface": {
+    "displayName": "PR Comments Resolver Plugins"
+  },
   "plugins": [
     {
       "name": "pr-comments-resolver",
-      "source": ".",
-      "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
-      "version": "0.2.0"
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
