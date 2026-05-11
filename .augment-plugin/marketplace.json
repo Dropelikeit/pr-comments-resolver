@@ -1,15 +1,22 @@
 {
   "name": "pr-comments-resolver",
   "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
-  "version": "0.2.0",
+  "version": "0.2.6",
   "plugins": [
     {
       "name": "pr-comments-resolver",
       "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
-      "version": "0.2.0",
+      "version": "0.2.6",
       "source": ".",
       "category": "code-review",
-      "tags": ["pr", "code-review", "github", "gitlab", "merge-request", "review"]
+      "tags": [
+        "pr",
+        "code-review",
+        "github",
+        "gitlab",
+        "merge-request",
+        "review"
+      ]
     }
   ]
 }
