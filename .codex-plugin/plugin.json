@@ -1,0 +1,38 @@
+{
+  "name": "pr-comments-resolver",
+  "version": "0.2.0",
+  "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
+  "author": {
+    "name": "Dropelikeit",
+    "url": "https://github.com/Dropelikeit"
+  },
+  "homepage": "https://github.com/Dropelikeit/pr-comments-resolver",
+  "repository": "https://github.com/Dropelikeit/pr-comments-resolver",
+  "license": "MIT",
+  "keywords": [
+    "pull-request",
+    "code-review",
+    "automation",
+    "github",
+    "gitlab"
+  ],
+  "skills": "./dist/codex/skills/",
+  "interface": {
+    "displayName": "PR Comments Resolver",
+    "shortDescription": "Resolve unresolved PR/MR review comments from Codex",
+    "longDescription": "Automates unresolved review comment resolution across GitHub and GitLab with configurable verification commands.",
+    "developerName": "Dropelikeit",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/Dropelikeit/pr-comments-resolver",
+    "privacyPolicyURL": "https://github.com/Dropelikeit/pr-comments-resolver/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/Dropelikeit/pr-comments-resolver/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Resolve unresolved review comments on my current PR.",
+      "Resolve unresolved comments for PR #42 and run project checks.",
+      "Find unresolved MR comments and fix them one by one."
+    ],
+    "brandColor": "#2563EB",
+    "composerIcon": "./icon.png",
+    "logo": "./icon.png"
+  }
+}

@@ -1,0 +1,26 @@
+name: Verify build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build all agents
+        run: bash scripts/build.sh all
+      - name: Verify no drift in committed outputs
+        run: |
+          git diff --exit-code -- skills/ dist/ \
+            || { echo "Generated files are out of date — run 'bash scripts/build.sh all' and commit."; exit 1; }
+      - name: Validate frontmatter and coverage
+        run: python3 scripts/validate.py
+      - name: Smoke test
+        run: bash tests/build_test.sh

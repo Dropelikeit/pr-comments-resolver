@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-10
+
+### Added
+- Multi-agent support: the `resolve-comments` skill is now generated for Claude Code, Augment, Codex, Junie, and Roo Code from a single agent-neutral kernel (`core/kernel.md`) plus per-agent adapters in `adapters/<agent>/`.
+- Marketplace manifests for additional agents: `.codex-plugin/plugin.json` + `.agents/plugins/marketplace.json` (Codex), and `.augment-plugin/{plugin,marketplace}.json` (Augment).
+- `scripts/build.sh` generates per-agent SKILL.md files into `dist/<agent>/` (and regenerates the canonical Claude `skills/resolve-comments/SKILL.md`).
+- `scripts/substitute.py` and `scripts/validate.py` for placeholder substitution and frontmatter / snippet-coverage validation.
+- `scripts/install.sh` convenience installer for Junie and Roo Code with `--user` / `--project` scope flags.
+- `tests/build_test.sh` smoke test and `.github/workflows/verify-build.yml` CI workflow that asserts no build drift.
+- `AGENTS.md` is recognized as a fallback project context file for agents that do not read `CLAUDE.md`.
+
+### Changed
+- The Claude `skills/resolve-comments/SKILL.md` is now a build artifact generated from `core/kernel.md` + `adapters/claude/`. Edit the kernel and adapters, not the generated file.
+- Existing Claude marketplace install paths (`.claude-plugin/`, `skills/resolve-comments/`) are preserved — no breaking change for current users.
+
 ## [0.1.5] - 2026-04-26
 ### Fixed
 - The `README.md` file contained some German sentences, which have now been correctly translated into English.
@@ -56,7 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CLAUDE.md` development guide and conventions
 - `README.md` with installation, usage, and platform support
 
-[Unreleased]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.5...v0.2.0
+[0.1.5]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Dropelikeit/pr-comments-resolver/compare/v0.1.1...v0.1.2

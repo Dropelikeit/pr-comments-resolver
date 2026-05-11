@@ -1,0 +1,20 @@
+{
+  "name": "pr-comments-resolver",
+  "interface": {
+    "displayName": "PR Comments Resolver Plugins"
+  },
+  "plugins": [
+    {
+      "name": "pr-comments-resolver",
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
