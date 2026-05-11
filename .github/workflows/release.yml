@@ -45,9 +45,36 @@ jobs:
         env:
           VERSION: ${{ needs.tag.outputs.new_version }}
         run: |
+          set -euo pipefail
           tmp="$(mktemp)"
-          jq --arg v "$VERSION" '.version = $v' .claude-plugin/plugin.json > "$tmp" && mv "$tmp" .claude-plugin/plugin.json
-          jq --arg v "$VERSION" '(.plugins[] | select(.name == "pr-comments-resolver") | .version) |= $v' .claude-plugin/marketplace.json > "$tmp" && mv "$tmp" .claude-plugin/marketplace.json
+
+          bump_root() {
+            local file="$1"
+            [ -f "$file" ] || { echo "skip (missing): $file"; return; }
+            jq --arg v "$VERSION" '.version = $v' "$file" > "$tmp" && mv "$tmp" "$file"
+            echo "updated root version: $file"
+          }
+
+          bump_plugins_entry() {
+            local file="$1"
+            [ -f "$file" ] || { echo "skip (missing): $file"; return; }
+            jq --arg v "$VERSION" \
+              'if (.plugins // empty) then (.plugins[] | select(.name == "pr-comments-resolver") | .version) |= $v else . end' \
+              "$file" > "$tmp" && mv "$tmp" "$file"
+            echo "updated plugins[] version: $file"
+          }
+
+          # Claude
+          bump_root         .claude-plugin/plugin.json
+          bump_plugins_entry .claude-plugin/marketplace.json
+
+          # Augment (root version on both files + plugins[] entry)
+          bump_root         .augment-plugin/plugin.json
+          bump_root         .augment-plugin/marketplace.json
+          bump_plugins_entry .augment-plugin/marketplace.json
+
+          # Codex
+          bump_root         .codex-plugin/plugin.json
 
       - name: Commit version bump
         env:
@@ -56,7 +83,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git add .claude-plugin/ .augment-plugin/ .codex-plugin/
           if git diff --cached --quiet; then
             echo "Manifests already at version ${VERSION}; nothing to commit."
             exit 0
