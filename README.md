@@ -11,6 +11,8 @@ Supported agents: **Claude Code**, **Augment**, **Codex**, **Junie**, **Roo Code
 - **Pluggable auth**: For Bitbucket and Azure DevOps you choose between a CLI path (analogous to `gh`/`glab`) and an MCP-server path. The skill remembers your choice per repository.
 - **Secret hygiene**: PATs are never written to memory or MCP config files — only env-variable references (e.g. `${AZURE_DEVOPS_PAT}`).
 - **Memory**: Saves platform settings so subsequent runs skip detection and auth-method selection.
+- **Deferred critical comments**: Classifies critical or larger-scope comments (security gaps, missing features, cross-file refactors) and handles them after all normal comments are done. For each deferred item you pick the workflow: SDD, Brainstorming, plan mode, just-do-it, or skip.
+- **Reply/Resolve preference**: One prompt per project decides whether the skill may post replies and resolve threads on your behalf (`a` post & resolve / `b` post only / `c` none). Applied uniformly across normal, deferred, and no-code-change paths.
 - **Configurable verification**: Runs project-defined lint, test, and analysis commands from `CLAUDE.md` (or `AGENTS.md` as fallback).
 - **Language-agnostic**: Works with any programming language or framework.
 
@@ -146,10 +148,43 @@ The skill will:
 2. For Bitbucket / Azure DevOps on first use, ask whether you want the CLI or MCP path (remembered for next time)
 3. Verify auth (CLI logged in, or MCP tools present); on failure, print the exact install/login command and stop
 4. Fetch all unresolved review comments / discussions / threads
-5. Work through each comment sequentially
-6. Run verification commands (from your project's `CLAUDE.md` or `AGENTS.md`)
-7. Self-review all changes
-8. Provide a summary
+5. **Classify** each comment as `normal` or `deferred` and let you confirm the split before any work starts
+6. On first use, ask once for Reply/Resolve permission and remember it per project
+7. Work through `normal` comments sequentially, applying your reply/resolve preference
+8. Walk the `deferred` bucket afterwards, asking per item which workflow to use (SDD / Brainstorming / plan mode / just do it / skip)
+9. Run verification commands (from your project's `CLAUDE.md` or `AGENTS.md`)
+10. Self-review all changes
+11. Provide a summary
+
+## Deferred Critical Comments
+
+Some review comments are not small in-place edits — they flag missing critical or larger pieces of work (security gaps, missing features, refactors touching several files, reviewer-tagged `blocker` / `critical` / `must-fix`). The skill handles these in a dedicated pass so the obvious changes ship first and the bigger items get the design attention they need.
+
+**How it works:**
+
+1. After fetching unresolved comments, the skill proposes a split (`Deferred` / `Normal`) with a one-line reason per deferred item. You confirm or edit the split with `move <i>→normal`, `move <i>→deferred`, or `exclude <i>` until you reply `OK`.
+2. All `normal` items are processed first (existing flow).
+3. The `deferred` bucket runs strictly afterwards, one item at a time. For each item the skill offers five options:
+   - `[s]` use SDD (spec → plan → tasks)
+   - `[b]` use the Brainstorming skill
+   - `[p]` enter plan mode
+   - `[d]` just do it (no design skill — proceeds inline)
+   - `[x]` skip this item (recorded in the summary)
+
+   Options that depend on a skill the current harness can't see (e.g. SDD on Codex) are shown marked unavailable, not removed.
+4. After each item the Reply/Resolve permission applies exactly as in the normal flow.
+
+## Reply/Resolve Permission
+
+On the first reply or resolve action in a repository, the skill asks once:
+
+- `a` — post replies AND resolve threads on my behalf
+- `b` — post replies only (you resolve manually)
+- `c` — no posting or resolving — I'll handle it
+
+The answer is saved in the existing `pr-comments-resolver-platform` project memory. Subsequent runs skip the prompt. The choice applies to every reply/resolve interaction, including the no-code-change path: when a comment needs no code change, the skill posts a short justification and (for `a`) resolves the thread.
+
+Per-adapter naming: the memory field is `Reply/Resolve permission` (Claude), `reply-resolve-permission` (Augment / Roo), `pr-comments-resolver-reply-resolve` (Junie). Codex has no persistence layer — the prompt runs once per session.
 
 ## Verification Commands
 

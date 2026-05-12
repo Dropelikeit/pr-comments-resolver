@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Deferred-critical-comments pass: Step 3.5 classifies each unresolved comment as `normal` or `deferred` (security gaps, missing features, cross-file refactors, reviewer-tagged `blocker`/`critical`/`must-fix`) and lets the user edit the proposed split before any work starts.
+- Step 4b processes the deferred bucket strictly after all normal items, one at a time. For each item the user picks the workflow: SDD (`[s]`), Brainstorming (`[b]`), plan mode (`[p]`), inline (`[d]`), or skip (`[x]`). Options requiring a skill the current adapter cannot see are shown marked unavailable.
+- One-time-per-project Reply/Resolve permission (`a` = post & resolve, `b` = post only, `c` = none) persisted alongside the existing platform memory. Applied uniformly across Step 4, Step 4b, and the no-code-change path.
+- Short clarification routine: a single terse question per ambiguity, with an inferred-assumption shortcut when the answer is implied by earlier turns in the same session.
+- Two new adapter snippets (`skill-availability`, `classify-confirm`) shipped for all five agents (claude, codex, augment, junie, roo).
+
+### Changed
+- `persistence-step.md` snippets gain the `Reply/Resolve permission` field (per-adapter naming). Memories without the field trigger the one-time prompt — fully back-compat.
+
 ## [1.0.0] - 2026-05-12
 
 This is a **breaking release** — the source layout split is observable to anyone building from `core/` and the memory schema gained required fields for new platforms (older memories continue to be read as `cli` for back-compat).
