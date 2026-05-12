@@ -1,11 +1,11 @@
 ---
 name: resolve-comments
-description: Use when resolving unresolved PR or MR review comments, working through reviewer feedback, or addressing code review threads on GitHub or GitLab repositories
+description: Use when resolving unresolved PR or MR review comments, working through reviewer feedback, or addressing code review threads on GitHub, GitLab, Bitbucket Cloud, or Azure DevOps repositories
 ---
 
 # Resolve PR/MR Review Comments
 
-Work through all unresolved review comments from a pull request (GitHub) or merge request (GitLab).
+Work through all unresolved review comments from a pull request or merge request on GitHub, GitLab, Bitbucket Cloud, or Azure DevOps.
 
 > This skill activates implicitly when its description matches your request. You can also reference it explicitly by name.
 
@@ -13,14 +13,13 @@ Work through all unresolved review comments from a pull request (GitHub) or merg
 
 ### 1.1 Check Memory
 
-Check the agent's persistent memory (if available) for a previously saved `pr-comments-resolver-platform` configuration. If found, run a quick CLI auth verification:
+Check the agent's persistent memory (if available) for a previously saved `pr-comments-resolver-platform` configuration. If found, run a quick auth verification using the recorded `Auth method` and the platform module's `Auth verification` section.
 
-- **GitHub**: `gh auth status`
-- **GitLab**: `glab auth status`
+If the memory exists and auth is healthy, skip to Step 1.6 (Load Platform Module).
 
-If the memory exists and the CLI is authenticated, skip to Step 1.5.
+If the memory is stale (auth fails) or not found, continue with detection.
 
-If the memory is stale (CLI not authenticated) or not found, continue with detection.
+**Back-compat:** memories from older versions may not contain an `Auth method` field. Treat a missing `Auth method` as `cli`.
 
 ### 1.2 Detect Platform
 
@@ -32,130 +31,82 @@ git remote get-url origin
 
 Match the URL against known patterns:
 
-| URL Contains | Platform | CLI Required |
-|---|---|---|
-| `github.com` | GitHub | `gh` |
-| `gitlab.com` | GitLab | `glab` |
-| `dev.azure.com` or `visualstudio.com` | Azure DevOps | Not supported in v1 |
+| URL Contains | Platform |
+|---|---|
+| `github.com` | GitHub |
+| `gitlab.com` | GitLab |
+| `bitbucket.org` | Bitbucket Cloud |
+| `dev.azure.com` or `visualstudio.com` | Azure DevOps |
 
-If the URL does not match any known pattern (e.g., a self-hosted instance), ask the user which platform this repository is hosted on. Offer the options: GitHub, GitLab, Other. Ask the user directly in chat with the listed options.
+If the URL does not match any known pattern (e.g., a self-hosted instance), ask the user which platform this repository is hosted on. Offer the options: GitHub, GitLab, Bitbucket Cloud, Azure DevOps, Other. Ask the user directly in chat with the listed options.
 
-If the platform is Azure DevOps or Other, inform the user:
-> "This skill currently supports GitHub and GitLab. Azure DevOps support is planned for a future version."
+If the user picks "Other", inform them: "This skill currently supports GitHub, GitLab, Bitbucket Cloud, and Azure DevOps. Other hosting platforms are not yet supported." Then stop.
 
-Then stop.
+### 1.3 Select Auth Method (Bitbucket and Azure only)
 
-### 1.3 Verify CLI
+For `bitbucket` and `azure`, if memory does not already record an `Auth method`, ask the user which method to use. Ask the user directly in chat with the listed options.
 
-Run the appropriate auth check:
+Options:
 
-- **GitHub**: `gh auth status`
-- **GitLab**: `glab auth status`
+- **Bitbucket**: `CLI (acli)` or `MCP (Atlassian Remote, OAuth)`.
+- **Azure DevOps**: `CLI (az + azure-devops extension)` or `MCP (@azure-devops/mcp, PAT-based)`.
 
-If the CLI tool is not installed, tell the user:
-- GitHub: "Install the GitHub CLI: https://cli.github.com/ — then run `gh auth login`"
-- GitLab: "Install the GitLab CLI: https://gitlab.com/gitlab-org/cli — then run `glab auth login`"
+For `github` and `gitlab`, `Auth method` is always `cli` — no prompt is shown.
 
-If installed but not authenticated, tell the user the exact auth command to run. Then stop.
+Remember the chosen value as `Auth method` (it gets written to memory in Step 1.5).
 
-### 1.4 Persist Platform (if supported)
+### 1.4 Verify Auth
 
-Augment reads `AGENTS.md` for project guidelines. To persist platform info across runs, add a one-line entry to `AGENTS.md` (or `AGENTS.local.md` if you want to keep it out of version control):
+Use the platform module's `Auth verification` section, following the path that matches the chosen `Auth method` (Path A for `cli`, Path B for `mcp`). If auth is not healthy, follow the module's stop-with-instructions guidance.
+
+### 1.5 Persist Platform (if supported)
+
+Augment reads `AGENTS.md` for project guidelines. To persist platform info across runs, add a `## pr-comments-resolver` section (or place these lines in `AGENTS.local.md` if you want to keep them out of version control):
 
 ```
-pr-comments-resolver-platform: <github|gitlab>
+## pr-comments-resolver
+
+- platform: <github|gitlab|bitbucket|azure>
+- auth-method: <cli|mcp>
+- cli-tool: <gh|glab|acli|az>        # only when auth-method = cli
+- mcp-server: <ado|atlassian>        # only when auth-method = mcp
+- token-env-var: $<ENV_VAR_NAME>     # only when MCP auth uses a PAT
+- org-or-workspace: <name>           # bitbucket workspace or azure organization
+- repository: <platform-native identifier>
 ```
 
-### 1.5 Get Repository Identifier
+Memories without `auth-method` from older runs are treated as `auth-method: cli`.
 
-- **GitHub**:
-```bash
-gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'
-```
+### 1.6 Load Platform Module
 
-- **GitLab**:
-```bash
-glab repo view --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['full_name'])"
-```
+Read the file `platforms/<platform>.md` (relative to this SKILL.md). It contains the platform-specific instructions for auth verification, repository identifier, PR/MR number detection, comment fetching, posting replies, and resolving threads. Use it as the authoritative source for those operations throughout the rest of this skill.
+
+Platform modules may invoke the MCP Config Writer for setting up an MCP server. The writer's procedure is:
+
+### MCP Config Writer
+
+This adapter does not currently include automatic MCP server configuration support. If a platform module requires MCP setup (Bitbucket MCP via Atlassian Remote, or Azure DevOps MCP via `@azure-devops/mcp`), instruct the user how to configure their host manually:
+
+- Show the user the MCP server entry the platform module wants to add (server id, command, args, and env-var-reference env block).
+- Tell them to add it to their adapter's MCP configuration (e.g., Codex / Augment / Junie / Roo configuration file — exact path depends on the user's setup).
+- Remind them: never paste a literal PAT into the config. Use the env-variable reference exactly as shown.
+- Ask them to confirm when done, then stop and tell them to restart their agent.
+
+### 1.7 Get Repository Identifier
+
+See the platform module's `Repository identifier` section.
 
 ## Step 2: Determine PR/MR Number
 
 If `$ARGUMENTS` is provided, use it as the PR/MR number.
 
-If `$ARGUMENTS` is empty or not provided, detect automatically from the current branch:
-
-- **GitHub**:
-```bash
-gh pr view --json number,title --jq '"\(.number) \(.title)"'
-```
-
-- **GitLab**:
-```bash
-glab mr view --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['iid'], d['title'])"
-```
+If `$ARGUMENTS` is empty or not provided, detect automatically from the current branch. See the platform module's `PR number` (or `MR IID`) section.
 
 If no PR/MR exists for the current branch, ask the user for the PR/MR number. Ask the user directly in chat with the listed options.
 
 ## Step 3: Fetch & Display Unresolved Comments
 
-### GitHub
-
-Load all review threads via the GraphQL API. The `isResolved` status is only available through GraphQL.
-
-```bash
-gh api graphql -f query='
-query($owner: String!, $repo: String!, $pr: Int!) {
-  repository(owner: $owner, name: $repo) {
-    pullRequest(number: $pr) {
-      title
-      url
-      reviewThreads(first: 100) {
-        nodes {
-          isResolved
-          isOutdated
-          path
-          line
-          startLine
-          comments(first: 50) {
-            nodes {
-              author { login }
-              body
-              createdAt
-              url
-            }
-          }
-        }
-      }
-    }
-  }
-}' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER
-```
-
-Replace `OWNER`, `REPO`, and `PR_NUMBER` with values from Steps 1 and 2.
-
-Filter: keep only threads where `isResolved` is `false`.
-
-### GitLab
-
-Fetch all discussions for the merge request:
-
-```bash
-glab api "projects/:id/merge_requests/MR_IID/discussions"
-```
-
-Replace `MR_IID` with the merge request IID from Step 2. The `:id` is automatically resolved by `glab` to the current project.
-
-Filter discussions:
-- Keep discussions where at least one note has `resolvable: true` AND `resolved: false`
-- Skip discussions where all resolvable notes are `resolved: true`
-
-Map GitLab fields to the display format:
-- `position.new_path` → file path
-- `position.new_line` → line number
-- `note.author.username` → author
-- `note.body` → comment body
-
-**Outdated detection**: GitLab does not have an `isOutdated` field like GitHub. If a note's `position` is `null` (the diff context was lost), mark the comment as `(outdated)`. This is a best-effort heuristic.
+Use the platform module's `Fetch unresolved …` section to obtain the list of unresolved review threads/discussions and map them to the uniform `{file, line, author, body, thread_id}` shape. Then render them via the `Display Unresolved Comments` block below.
 
 ### Display Unresolved Comments
 

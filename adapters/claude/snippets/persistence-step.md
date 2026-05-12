@@ -1,13 +1,19 @@
-After successful detection and CLI verification, save a project memory:
+After successful detection and CLI verification (and, for bitbucket/azure, auth-method selection), save a project memory:
 
-```markdown
+~~~markdown
 ---
 name: pr-comments-resolver-platform
-description: Detected hosting platform and CLI tool for this repository
+description: Detected hosting platform, auth method, and identifier for this repository
 type: project
 ---
 
-Platform: <github|gitlab>
-CLI tool: <gh|glab>
-Repository: <owner/repo or namespace/project>
-```
+Platform: <github|gitlab|bitbucket|azure>
+Auth method: <cli|mcp>
+CLI tool: <gh|glab|acli|az>           # only when Auth method = cli
+MCP server id: <ado|atlassian>        # only when Auth method = mcp
+Token env var: $<ENV_VAR_NAME>        # only when MCP auth uses a PAT (e.g. azure mcp); omit for OAuth (atlassian) and all cli paths
+Org / Workspace: <name>               # bitbucket workspace or azure organization; omit for github/gitlab
+Repository: <platform-native identifier>
+~~~
+
+> Back-compat: memories saved by older versions of this skill may lack `Auth method`. When that field is missing, treat it as `cli`.

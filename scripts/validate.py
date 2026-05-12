@@ -21,6 +21,8 @@ OUT_PATHS = {
     "roo":     ROOT / "dist/roo/.roo/skills/resolve-comments/SKILL.md",
 }
 
+PLATFORM_NAMES = ["github", "gitlab", "bitbucket", "azure"]
+
 errors = []
 
 
@@ -80,11 +82,27 @@ def validate_no_stray_placeholders():
             errors.append(f"{agent}: output contains unsubstituted placeholders")
 
 
+def validate_platform_files():
+    for agent, skill_path in OUT_PATHS.items():
+        platforms_dir = skill_path.parent / "platforms"
+        for name in PLATFORM_NAMES:
+            p = platforms_dir / f"{name}.md"
+            if not p.exists():
+                errors.append(f"{p}: missing platform module")
+                continue
+            text = p.read_text()
+            if "<!-- ADAPTER: " in text:
+                errors.append(f"{p}: unsubstituted ADAPTER placeholder")
+            if not text.strip():
+                errors.append(f"{p}: empty file")
+
+
 def main():
     for agent, path in OUT_PATHS.items():
         validate_frontmatter(agent, path)
     validate_snippet_coverage()
     validate_no_stray_placeholders()
+    validate_platform_files()
     if errors:
         for e in errors:
             print(f"FAIL: {e}", file=sys.stderr)

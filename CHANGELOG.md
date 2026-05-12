@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-12
+
+This is a **breaking release** — the source layout split is observable to anyone building from `core/` and the memory schema gained required fields for new platforms (older memories continue to be read as `cli` for back-compat).
+
+### Added
+- Bitbucket Cloud platform support via `acli` (CLI) and the official Atlassian Remote MCP server (`https://mcp.atlassian.com/v1/sse`, OAuth-based).
+- Azure DevOps platform support via `az` with the `azure-devops` extension (CLI) and the `@azure-devops/mcp` MCP server (PAT-based; secret kept in an env variable, never written to config files).
+- Reusable MCP Config Writer snippet with diff-on-conflict semantics: existing `mcpServers.<id>` entries are never silently overwritten.
+- Platform memory schema extended with `Auth method`, `MCP server id`, `Token env var` (env-var reference only), and `Org / Workspace`.
+- Auth-method selection in the orchestrator kernel: Bitbucket and Azure repositories prompt once for CLI vs MCP and remember the choice.
+- Per-platform module files emitted alongside each agent's `SKILL.md` under `platforms/{github,gitlab,bitbucket,azure}.md`.
+
+### Changed
+- Source split: `core/kernel.md` is now a thin orchestrator; platform-specific instructions live in `core/platforms/<name>.md`. The build pipeline (`scripts/build.sh`) emits each platform module per agent.
+- Detection table in Step 1.2 of the orchestrator no longer lists "CLI Required" since the auth method is platform-specific and user-selectable for Bitbucket and Azure.
+
+### Compatibility
+- Existing GitHub and GitLab project memories without `Auth method` continue to work — they are read as `cli`. No migration needed.
+- Generated artifacts for non-Claude adapters (codex, augment, junie, roo) now include `platforms/` directories. The Codex adapter intentionally retains no persistence layer; its MCP Config Writer snippet is a stub directing users to configure their host manually.
+
 ## [0.2.0] - 2026-05-10
 
 ### Added
