@@ -1,12 +1,12 @@
 {
   "name": "pr-comments-resolver",
   "description": "Resolve unresolved PR/MR review comments across GitHub, GitLab, Bitbucket Cloud, and Azure DevOps",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "plugins": [
     {
       "name": "pr-comments-resolver",
       "description": "Resolve unresolved PR/MR review comments across GitHub, GitLab, Bitbucket Cloud, and Azure DevOps",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": ".",
       "category": "code-review",
       "tags": [
