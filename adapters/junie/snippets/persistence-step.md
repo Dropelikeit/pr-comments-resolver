@@ -10,6 +10,7 @@ Persist platform info in `.junie/AGENTS.md` under a `## Project Memory` section:
 - pr-comments-resolver-token-env: $<ENV_VAR_NAME>      # only for PAT-based MCP (azure)
 - pr-comments-resolver-org: <name>                     # bitbucket workspace or azure organization
 - pr-comments-resolver-repo: <owner/repo>
+- pr-comments-resolver-reply-resolve: <a|b|c>          # a = post & resolve, b = post only, c = none
 ~~~
 
-Entries missing `pr-comments-resolver-auth` from older runs are treated as `cli`.
+Entries missing `pr-comments-resolver-auth` from older runs are treated as `cli`. Entries missing `pr-comments-resolver-reply-resolve` trigger the one-time Step 4.0 prompt.

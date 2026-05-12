@@ -10,6 +10,7 @@ Augment reads `AGENTS.md` for project guidelines. To persist platform info acros
 - token-env-var: $<ENV_VAR_NAME>     # only when MCP auth uses a PAT
 - org-or-workspace: <name>           # bitbucket workspace or azure organization
 - repository: <platform-native identifier>
+- reply-resolve-permission: <a|b|c>  # a = post & resolve, b = post only, c = none
 ```
 
-Memories without `auth-method` from older runs are treated as `auth-method: cli`.
+Memories without `auth-method` from older runs are treated as `auth-method: cli`. Memories without `reply-resolve-permission` trigger the one-time Step 4.0 prompt.
