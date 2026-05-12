@@ -1,0 +1,1 @@
+These harnesses do not currently expose a skills registry; assume `[s]` and `[b]` are unavailable. Show them marked unavailable; allow the user to type a path to a local skill file if they want to invoke one manually. Record this as a transient session fact — do NOT persist it.

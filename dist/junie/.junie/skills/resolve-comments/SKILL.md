@@ -73,9 +73,10 @@ Persist platform info in `.junie/AGENTS.md` under a `## Project Memory` section:
 - pr-comments-resolver-token-env: $<ENV_VAR_NAME>      # only for PAT-based MCP (azure)
 - pr-comments-resolver-org: <name>                     # bitbucket workspace or azure organization
 - pr-comments-resolver-repo: <owner/repo>
+- pr-comments-resolver-reply-resolve: <a|b|c>          # a = post & resolve, b = post only, c = none
 ~~~
 
-Entries missing `pr-comments-resolver-auth` from older runs are treated as `cli`.
+Entries missing `pr-comments-resolver-auth` from older runs are treated as `cli`. Entries missing `pr-comments-resolver-reply-resolve` trigger the one-time Step 4.0 prompt.
 
 ### 1.6 Load Platform Module
 
@@ -126,9 +127,65 @@ The `(outdated)` marker means the code has changed since the comment was written
 
 If there are no unresolved comments, inform the user and stop.
 
+## Step 3.5: Classify & Confirm
+
+Classify each unresolved comment into one of two buckets:
+
+- **deferred**: the comment flags a missing critical or larger piece of work — typically (a) a missing module/feature, (b) a security or correctness gap, (c) a refactor that touches more than two files, or (d) a reviewer-applied marker such as `blocker`, `critical`, or `must-fix`.
+- **normal**: everything else (in-place edits within existing logic).
+
+Use these signals as a heuristic — the user confirms the final split:
+
+- **Scope**: would the fix introduce a new file/module, or change one existing function?
+- **Keywords**: presence of `missing`, `not implemented`, `should also handle`, `security`, `race`, `architecture`, `refactor entire`, `add support for`, or localized equivalents.
+- **Cross-file**: would the fix touch >2 files or require a design decision?
+- **Severity markers**: explicit `blocker` / `critical` / `must-fix` labels or words from the reviewer.
+
+Present the proposed split via the Classification block below.
+
+Display the proposed classification as two numbered lists. Use the comment numbers from the Step 3 unresolved-comments display so the user does not need to look up identifiers.
+
+~~~
+## Classification (proposed)
+
+Deferred (<N>):
+  <i>. <path>:<line>  — @<author> — "<short excerpt>"
+       reason: <one short phrase, e.g. "security + new module needed">
+  ...
+
+Normal (<M>):
+  <comma-separated indices>
+
+Reply with one of:
+  OK
+  move <i>→normal
+  move <i>→deferred
+  exclude <i>
+~~~
+
+Emit the block as plain text and read free-form input. Re-render the block after each edit until the user replies `OK`.
+
+Repeat the presentation, accepting `move <N>→normal`, `move <N>→deferred`, `exclude <N>`, or `OK`, until the user types `OK`. Excluded comments are dropped from both buckets (matches the existing exclude behaviour).
+
 ## Step 4: Create Tasks & Resolve Comments
 
 Track each unresolved comment as a separate work item and address them sequentially.
+
+### 4.0 Reply/Resolve Permission (one-time per project)
+
+Read the project memory `pr-comments-resolver-platform`. If the field `Reply/Resolve permission` is absent, ask the user once via AskUserQuestion:
+
+- `a` — post replies AND resolve threads on my behalf
+- `b` — post replies only (you resolve manually)
+- `c` — no, I'll handle posting and resolving myself
+
+Persist the answer in the same project memory written by Step 1.5 (`pr-comments-resolver-platform`). On later runs, skip this prompt unless the user explicitly resets.
+
+Apply the chosen permission in **every** reply/resolve interaction that follows in Step 4 and Step 4b, including the no-code-change path (post a short justification → `a`: reply + resolve, `b`: reply only, `c`: show the justification to the user).
+
+### 4.0.1 Clarification Routine
+
+When a comment is unclear, ask **one** short clarifying question. Before asking, scan prior user answers in the current session — if the answer is already implied, state the inferred assumption and continue instead of asking. Keep clarifications terse; expand only on explicit request. Add a one-line example when the question itself is ambiguous.
 
 Then work through each task sequentially:
 
@@ -143,6 +200,30 @@ Important:
 - Work through comments sequentially, not in parallel — changes may overlap in the same file
 - Follow conventions from .junie/AGENTS.md (or AGENTS.md at the project root as fallback) if present in the project
 - Respect existing code patterns and architecture in the project
+
+## Step 4b: Resolve Deferred Bucket
+
+If the deferred bucket from Step 3.5 is empty, skip this step entirely.
+
+Otherwise announce: "Now handling N deferred items." Process items strictly in the order shown in the Step 3.5 list, one at a time.
+
+For each deferred item:
+
+1. Detect which design skills are visible to the running agent:
+
+   These harnesses do not currently expose a skills registry; assume `[s]` and `[b]` are unavailable. Show them marked unavailable; allow the user to type a path to a local skill file if they want to invoke one manually. Record this as a transient session fact — do NOT persist it.
+
+2. Ask the user how to handle this specific item. Present five options; unavailable skills are shown but marked unavailable:
+
+   - `[s]` use SDD (spec → plan → tasks)
+   - `[b]` use Brainstorming skill
+   - `[p]` enter plan mode (built-in)
+   - `[d]` just do it (no design skill — agent proceeds inline)
+   - `[x]` skip this item (recorded as deferred-skipped in the summary)
+
+3. Execute the chosen route. `s`/`b` invoke the corresponding skill; `p` activates plan mode and waits for ExitPlanMode; `d` follows the normal Step 4 inline path; `x` records the skip and continues.
+
+4. After the route completes, apply the Reply/Resolve permission from Step 4.0 exactly as in the normal flow.
 
 ## Step 5: Verification
 

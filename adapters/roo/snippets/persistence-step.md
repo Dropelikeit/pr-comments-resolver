@@ -10,6 +10,7 @@ Roo loads `AGENTS.md` and `AGENTS.local.md` as rules. To persist platform info a
 - token-env-var: $<ENV_VAR_NAME>     # only when MCP auth uses a PAT
 - org-or-workspace: <name>           # bitbucket workspace or azure organization
 - repository: <platform-native identifier>
+- reply-resolve-permission: <a|b|c>  # a = post & resolve, b = post only, c = none
 ```
 
-Entries missing `auth-method` from older runs are treated as `cli`.
+Entries missing `auth-method` from older runs are treated as `cli`. Entries missing `reply-resolve-permission` trigger the one-time Step 4.0 prompt.

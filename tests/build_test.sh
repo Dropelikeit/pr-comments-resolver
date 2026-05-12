@@ -14,6 +14,20 @@ grep -q 'TodoWrite' "$OUT" || { echo "FAIL: track-tasks snippet not substituted"
 grep -q 'CLAUDE.md' "$OUT" || { echo "FAIL: context-file-name snippet not substituted"; exit 1; }
 ! grep -q '<!-- ADAPTER: ' "$OUT" || { echo "FAIL: unsubstituted placeholders remain"; exit 1; }
 
+for needle in "Step 3.5" "Step 4b" "Reply/Resolve permission" "Classification"; do
+  grep -qF "$needle" skills/resolve-comments/SKILL.md \
+    || { echo "FAIL: missing '$needle' in built Claude SKILL.md"; exit 1; }
+done
+
+for d in skills/resolve-comments dist/*/skills/resolve-comments; do
+  [ -f "$d/SKILL.md" ] || continue
+  for needle in "skill-availability" "classify-confirm"; do
+    if grep -q "<!-- ADAPTER: $needle -->" "$d/SKILL.md"; then
+      echo "FAIL: unsubstituted ADAPTER placeholder '$needle' in $d/SKILL.md"; exit 1
+    fi
+  done
+done
+
 # Platform modules must be built into a sibling platforms/ directory
 PLATFORMS_DIR="skills/resolve-comments/platforms"
 for p in github gitlab bitbucket azure; do
