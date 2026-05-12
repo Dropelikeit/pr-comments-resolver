@@ -1,7 +1,7 @@
 {
   "name": "pr-comments-resolver",
-  "version": "0.2.6",
-  "description": "Resolve unresolved PR/MR review comments across GitHub and GitLab",
+  "version": "1.0.0",
+  "description": "Resolve unresolved PR/MR review comments across GitHub, GitLab, Bitbucket Cloud, and Azure DevOps",
   "author": {
     "name": "Dropelikeit",
     "url": "https://github.com/Dropelikeit"
@@ -14,13 +14,15 @@
     "code-review",
     "automation",
     "github",
-    "gitlab"
+    "gitlab",
+    "bitbucket",
+    "azure-devops"
   ],
   "skills": "./dist/codex/skills/",
   "interface": {
     "displayName": "PR Comments Resolver",
     "shortDescription": "Resolve unresolved PR/MR review comments from Codex",
-    "longDescription": "Automates unresolved review comment resolution across GitHub and GitLab with configurable verification commands.",
+    "longDescription": "Automates unresolved review comment resolution across GitHub, GitLab, Bitbucket Cloud, and Azure DevOps with configurable verification commands.",
     "developerName": "Dropelikeit",
     "category": "Productivity",
     "websiteURL": "https://github.com/Dropelikeit/pr-comments-resolver",

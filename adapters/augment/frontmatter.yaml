@@ -1,2 +1,2 @@
 name: resolve-comments
-description: Use when resolving unresolved PR or MR review comments, working through reviewer feedback, or addressing code review threads on GitHub or GitLab repositories
+description: Use when resolving unresolved PR or MR review comments, working through reviewer feedback, or addressing code review threads on GitHub, GitLab, Bitbucket Cloud, or Azure DevOps repositories

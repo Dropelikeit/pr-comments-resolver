@@ -41,6 +41,26 @@ build_one() {
   } > "$out"
 
   echo "Built $agent -> $out"
+  build_platforms "$agent"
+}
+
+build_platforms() {
+  local agent="$1"
+  local adapter_dir="adapters/${agent}"
+  local out_skill
+  out_skill="$(out_path_for "$agent")"
+  local out_platforms_dir
+  out_platforms_dir="$(dirname "$out_skill")/platforms"
+
+  mkdir -p "$out_platforms_dir"
+
+  shopt -s nullglob
+  for src in core/platforms/*.md; do
+    local name
+    name="$(basename "$src")"
+    python3 scripts/substitute.py "$src" "$adapter_dir/snippets" > "$out_platforms_dir/$name"
+  done
+  shopt -u nullglob
 }
 
 # Args: agent name(s) or 'all'
